@@ -80,7 +80,8 @@
   }
   .brand{
     display:flex;
-    align-items:baseline;
+    align-items:center;
+    justify-content:space-between;
     gap:10px;
   }
   .brand h1{
@@ -100,6 +101,22 @@
     text-transform:uppercase;
     color:var(--ink-soft);
   }
+  .exit-btn{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--ink-soft);
+    font-size:15px;
+    line-height:1;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .exit-btn:active{transform:scale(.94)}
   .status{
     display:flex;
     align-items:center;
@@ -399,8 +416,11 @@
   <div class="conn-banner" id="connBanner" hidden></div>
   <header class="top">
     <div class="brand">
-      <h1>Лила</h1>
-      <span class="tag">игра самопознания</span>
+      <div>
+        <h1>Лила</h1>
+        <span class="tag">игра самопознания</span>
+      </div>
+      <button class="exit-btn" id="exitBtn" aria-label="Выйти">✕</button>
     </div>
     <div class="status">
       <div class="bar"><i id="progressBar"></i></div>
@@ -424,20 +444,6 @@
     </div>
   </main>
 
-  <nav class="tabs">
-    <button class="active" data-tab="dice" id="tabDice">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.3" cy="8.3" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.7" cy="8.3" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/><circle cx="8.3" cy="15.7" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.7" cy="15.7" r="1.15" fill="currentColor" stroke="none"/></svg>
-      Кубик
-    </button>
-    <button data-tab="diary" id="tabDiary">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.7-1.3-4-1.8-6.5-1.3v13c2.5-.5 4.8 0 6.5 1.3 1.7-1.3 4-1.8 6.5-1.3v-13c-2.5-.5-4.8 0-6.5 1.3Z"/><path d="M12 6.5v13"/></svg>
-      Дневник
-    </button>
-    <button data-tab="oracle" id="tabOracle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>
-      Оракул
-    </button>
-  </nav>
 </div>
 
 <div class="sheet-backdrop" id="sheetBackdrop">
@@ -470,7 +476,17 @@
   var tg = window.Telegram && window.Telegram.WebApp;
   var initData = (tg && tg.initData) || "";
   if (tg) {
-    try { tg.ready(); tg.expand(); } catch (e) {}
+    try {
+      tg.ready();
+      tg.expand();
+      // Если игрок всё же закроет мини-апп системным крестиком Telegram
+      // (а не нашей кнопкой ✕ в шапке), Telegram сам спросит
+      // подтверждение — это его собственное окно с общим текстом, без
+      // наших двух вариантов (ограничение платформы, обойти нельзя).
+      if (typeof tg.enableClosingConfirmation === "function") {
+        tg.enableClosingConfirmation();
+      }
+    } catch (e) {}
   }
 
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -589,7 +605,6 @@
   var sheetTitle = document.getElementById("sheetTitle");
   var sheetBody = document.getElementById("sheetBody");
   var sheetClose = document.getElementById("sheetClose");
-  var tabButtons = document.querySelectorAll("nav.tabs button");
 
   function el(tag, opts) {
     var e = document.createElement(tag);
@@ -606,12 +621,6 @@
   }
   function closeSheet() {
     sheetBackdrop.classList.remove("open");
-    setActiveTab("dice");
-  }
-  function setActiveTab(tab) {
-    tabButtons.forEach(function (b) {
-      b.classList.toggle("active", b.dataset.tab === tab);
-    });
   }
 
   sheetClose.addEventListener("click", closeSheet);
@@ -760,68 +769,33 @@
   }
   rollBtn.addEventListener("click", rollDice);
 
-  // ---------------- дневник ----------------
-  function renderDiary(entries) {
-    sheetBody.innerHTML = "";
-    if (!entries.length) {
-      sheetBody.appendChild(el("p", { cls: "muted", text: "Пока дневник пуст. Попади на клетку и оставь первый отклик." }));
+  // ---------------- выход из игры ----------------
+  var exitBtn = document.getElementById("exitBtn");
+  exitBtn.addEventListener("click", function () {
+    if (!tg || typeof tg.showPopup !== "function") {
+      // На случай совсем старой версии Telegram, где showPopup
+      // недоступен, — закрываем без выбора (прогресс всё равно уже
+      // сохранён после каждого хода).
+      if (tg) tg.close();
       return;
     }
-    entries.forEach(function (entry) {
-      var item = el("div", { cls: "entry" });
-      item.appendChild(el("div", { cls: "meta", text: (entry.date || "") + " · " + (entry.cell_name || "") }));
-      if (entry.format === "text" && entry.answer_text) {
-        item.appendChild(el("div", { cls: "text", text: entry.answer_text }));
-      } else if (entry.format === "voice") {
-        item.appendChild(el("div", { cls: "text muted", text: "🎤 голосовая запись — послушать можно в Telegram, в «Моём дневнике»" }));
-        if (entry.voice_transcript) {
-          item.appendChild(el("div", { cls: "text", text: "Распознано: " + entry.voice_transcript }));
-        }
-      }
-      sheetBody.appendChild(item);
-    });
-  }
-
-  // ---------------- оракул ----------------
-  function renderOracleIntro() {
-    openSheet("Оракул");
-    sheetBody.appendChild(el("p", { text: "🔮 Сформулируй свой вопрос — или просто подумай о том, что тебя сейчас тревожит." }));
-    var row = el("div", { cls: "row" });
-    var readyBtn = el("button", { cls: "btn primary", text: "✅ Я готов(а)" });
-    row.appendChild(readyBtn);
-    sheetBody.appendChild(row);
-    readyBtn.addEventListener("click", function () {
-      readyBtn.disabled = true;
-      apiPost("/api/oracle", {}).then(function (data) {
-        hideBanner();
-        sheetBody.innerHTML = "";
-        sheetBody.appendChild(el("p", { cls: "q", text: data.label }));
-        sheetBody.appendChild(el("p", { text: data.text }));
-      }).catch(function () {
-        showBanner("Не получилось связаться с оракулом — проверь связь с ботом.");
-        readyBtn.disabled = false;
-      });
-    });
-  }
-
-  tabButtons.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var tab = btn.dataset.tab;
-      if (tab === "dice") { setActiveTab("dice"); return; }
-      setActiveTab(tab);
-      if (tab === "diary") {
-        openSheet("Твой дневник");
-        sheetBody.appendChild(el("p", { cls: "muted", text: "Загружаю…" }));
-        apiGet("/api/diary").then(function (data) {
-          hideBanner();
-          renderDiary(data.entries || []);
-        }).catch(function () {
-          sheetBody.innerHTML = "";
-          sheetBody.appendChild(el("p", { cls: "muted", text: "Не удалось загрузить дневник — проверь связь с ботом." }));
+    tg.showPopup({
+      title: "Выйти из игры?",
+      message: "Что сделать с текущим прогрессом?",
+      buttons: [
+        { id: "abort", type: "destructive", text: "Прервать игру" },
+        { id: "save", type: "default", text: "Доиграть потом" },
+        { id: "cancel", type: "cancel", text: "Отмена" }
+      ]
+    }, function (buttonId) {
+      if (buttonId === "abort") {
+        apiPost("/api/abort", {}).catch(function () {}).then(function () {
+          tg.close();
         });
-      } else if (tab === "oracle") {
-        renderOracleIntro();
+      } else if (buttonId === "save") {
+        tg.close();
       }
+      // "cancel" или закрытие без выбора — остаёмся в игре, ничего не делаем.
     });
   });
 

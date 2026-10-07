@@ -1,4 +1,5 @@
 <title>Лила</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -333,9 +334,63 @@
     .die.rolling{animation:none}
     .token.hop{animation:none}
   }
+
+  .conn-banner{
+    background:#7a2222;
+    color:#fff;
+    font-size:12.5px;
+    padding:8px 12px;
+    border-radius:10px;
+    margin-top:10px;
+    line-height:1.4;
+  }
+  #sheetBody{font-size:14px;line-height:1.55;color:var(--ink-soft)}
+  #sheetBody p{margin:0 0 10px}
+  #sheetBody .q{color:var(--ink);font-style:italic;margin-top:10px}
+  #sheetBody textarea{
+    width:100%;
+    min-height:90px;
+    font-family:inherit;
+    font-size:14px;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    resize:vertical;
+    margin-top:10px;
+    box-sizing:border-box;
+  }
+  #sheetBody .row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  #sheetBody .btn{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:600;
+    font-size:13px;
+    padding:10px 14px;
+    border-radius:10px;
+  }
+  #sheetBody .btn:disabled{opacity:.55}
+  #sheetBody .btn.primary{
+    background:linear-gradient(180deg,var(--gold),var(--gold-strong));
+    color:#2c2013;
+    border:none;
+  }
+  #sheetBody .muted{color:var(--ink-soft)}
+  #sheetBody .entry{
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  #sheetBody .entry:last-child{border-bottom:none}
+  #sheetBody .entry .meta{font-size:12px;color:var(--ink-soft);margin-bottom:4px}
+  #sheetBody .entry .text{color:var(--ink)}
 </style>
 
 <div class="app">
+  <div class="conn-banner" id="connBanner" hidden></div>
   <header class="top">
     <div class="brand">
       <h1>Лила</h1>
@@ -382,7 +437,7 @@
 <div class="sheet-backdrop" id="sheetBackdrop">
   <div class="sheet">
     <h2 id="sheetTitle">Дневник</h2>
-    <p id="sheetText">Здесь появятся ваши записи и размышления о пройденном пути.</p>
+    <div id="sheetBody"></div>
     <button class="close" id="sheetClose">Понятно</button>
   </div>
 </div>
@@ -393,36 +448,27 @@
 
   var COORDS = {"1": [145.7058064516129, 961.3509677419354], "2": [276.1529032258064, 960.4754838709677], "3": [411.8529032258065, 963.1019354838709], "4": [546.6774193548387, 964.8529032258064], "5": [677.1245161290323, 957.8490322580644], "6": [808.4470967741935, 960.4754838709677], "7": [944.1470967741935, 959.5999999999999], "8": [1074.594193548387, 963.1019354838709], "9": [1205.0412903225806, 963.1019354838709], "10": [1205.0412903225806, 848.4135483870967], "11": [1068.465806451613, 843.1606451612903], "12": [940.6451612903226, 846.6625806451613], "13": [804.0696774193549, 844.9116129032258], "14": [674.498064516129, 841.4096774193548], "15": [536.1716129032258, 843.1606451612903], "16": [411.8529032258065, 846.6625806451613], "17": [274.40193548387094, 846.6625806451613], "18": [144.83032258064515, 842.2851612903225], "19": [144.83032258064515, 723.2193548387096], "20": [276.1529032258064, 724.0948387096773], "21": [410.101935483871, 727.5967741935483], "22": [543.1754838709677, 726.7212903225806], "23": [677.1245161290323, 725.8458064516128], "24": [811.9490322580644, 727.5967741935483], "25": [938.8941935483871, 727.5967741935483], "26": [1072.8432258064518, 725.8458064516128], "27": [1212.9206451612904, 725.8458064516128], "28": [1208.5432258064516, 612.0329032258064], "29": [1070.2167741935482, 606.78], "30": [935.3922580645161, 605.9045161290322], "31": [809.3225806451613, 609.4064516129032], "32": [677.1245161290323, 605.0290322580645], "33": [542.3, 606.78], "34": [410.97741935483873, 607.6554838709677], "35": [277.02838709677417, 609.4064516129032], "36": [145.7058064516129, 605.9045161290322], "37": [153.58516129032256, 489.4651612903226], "38": [285.78322580645164, 491.2161290322581], "39": [410.97741935483873, 487.71419354838713], "40": [542.3, 489.4651612903226], "41": [679.7509677419355, 491.2161290322581], "42": [805.8206451612904, 489.4651612903226], "43": [939.7696774193549, 488.58967741935487], "44": [1062.3374193548389, 489.4651612903226], "45": [1200.6638709677418, 490.34064516129035], "46": [1202.4148387096775, 372.15032258064525], "47": [1064.963870967742, 367.77290322580643], "48": [936.267741935484, 371.2748387096774], "49": [804.0696774193549, 368.6483870967743], "50": [676.2490322580645, 366.02193548387095], "51": [540.5490322580645, 369.5238709677419], "52": [412.7283870967742, 370.39935483870977], "53": [277.02838709677417, 367.77290322580643], "54": [143.9548387096774, 369.5238709677419], "55": [145.7058064516129, 252.20903225806455], "56": [277.02838709677417, 257.461935483871], "57": [407.47548387096776, 253.0845161290324], "58": [540.5490322580645, 253.96000000000004], "59": [678.8754838709677, 252.20903225806455], "60": [808.4470967741935, 249.58258064516144], "61": [941.5206451612904, 249.58258064516144], "62": [1075.4696774193549, 252.20903225806455], "63": [1205.0412903225806, 249.58258064516144], "64": [1203.2903225806454, 134.8941935483872], "65": [1076.3451612903227, 134.01870967741957], "66": [944.1470967741935, 135.76967741935505], "67": [812.8245161290323, 137.52064516129053], "68": [680.6264516129032, 137.52064516129053], "69": [549.3038709677419, 139.271612903226], "70": [409.22645161290325, 137.52064516129053], "71": [278.77935483870965, 138.39612903225816], "72": [145.7058064516129, 135.76967741935505]};
   var BOARD_W = 1357, BOARD_H = 1106;
-  var FINISH = 68;
   var TOTAL_CELLS = 72;
-  var STORAGE_KEY = "lila-demo-state-v2";
-
-  var ARROWS = {10:23, 20:32, 27:41, 28:50, 17:69, 45:67, 46:62, 37:66, 54:68, 22:60};
-  var SNAKES = {16:4, 12:8, 24:7, 29:6, 44:9, 55:3, 52:35, 61:13, 63:2, 72:51};
 
   var PIP_LAYOUT = {
     1:[5], 2:[1,9], 3:[1,5,9], 4:[1,3,7,9], 5:[1,3,5,7,9], 6:[1,3,4,6,7,9]
   };
 
-  function loadState(){
-    try{
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return {cell:0, entered:false};
-      var data = JSON.parse(raw);
-      if(typeof data.cell !== "number") data.cell = 0;
-      if(typeof data.entered !== "boolean") data.entered = false;
-      return data;
-    }catch(e){ return {cell:0, entered:false}; }
-  }
-  function saveState(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  // Постоянный адрес API бота. Поднимается на компьютере вместе с ботом и
+  // становится виден из интернета через туннель с постоянным доменом — см.
+  // раздел «Мини-апп» в документе «Как запустить бота». Если этот адрес
+  // когда-нибудь сменится — его нужно поменять здесь и обновить мини-апп
+  // (см. там же, «Если понадобится обновить мини-апп»).
+  var API_BASE = "https://REPLACE-ME.ngrok-free.app";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var initData = (tg && tg.initData) || "";
+  if (tg) {
+    try { tg.ready(); tg.expand(); } catch (e) {}
   }
 
-  var state = loadState();
-  var rolling = false;
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function wait(ms){ return new Promise(function(r){ setTimeout(r, reduceMotion ? 0 : ms); }); }
-  function rollOne(){ return 1 + Math.floor(Math.random()*6); }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, reduceMotion ? 0 : ms); }); }
 
   var tokenEl = document.getElementById("token");
   var dieEl = document.getElementById("die");
@@ -430,41 +476,71 @@
   var rollCaption = document.getElementById("rollCaption");
   var cellLabel = document.getElementById("cellLabel");
   var progressBar = document.getElementById("progressBar");
+  var connBanner = document.getElementById("connBanner");
 
-  function buildDie(){
+  function showBanner(text) {
+    connBanner.textContent = text;
+    connBanner.hidden = false;
+  }
+  function hideBanner() { connBanner.hidden = true; }
+
+  // ---------------- API ----------------
+  function apiGet(path) {
+    var sep = path.indexOf("?") >= 0 ? "&" : "?";
+    return fetch(API_BASE + path + sep + "init_data=" + encodeURIComponent(initData))
+      .then(function (res) {
+        if (!res.ok) throw new Error("http " + res.status);
+        return res.json();
+      });
+  }
+  function apiPost(path, body) {
+    body = body || {};
+    body.init_data = initData;
+    return fetch(API_BASE + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (!res.ok) throw new Error("http " + res.status);
+      return res.json();
+    });
+  }
+
+  // ---------------- die ----------------
+  function buildDie() {
     dieEl.innerHTML = "";
-    for(var i=0;i<9;i++){
-      var s = document.createElement("span");
-      s.className = "pip";
-      s.dataset.i = i+1;
-      dieEl.appendChild(s);
+    for (var i = 1; i <= 9; i++) {
+      var pip = document.createElement("div");
+      pip.className = "pip";
+      pip.dataset.pos = String(i);
+      dieEl.appendChild(pip);
     }
   }
-  function showFace(n){
-    var on = PIP_LAYOUT[n] || [];
+  function showFace(n) {
+    var positions = PIP_LAYOUT[n] || [];
     var pips = dieEl.querySelectorAll(".pip");
-    pips.forEach(function(p){
-      p.classList.toggle("on", on.indexOf(parseInt(p.dataset.i,10)) !== -1);
+    pips.forEach(function (p) {
+      p.classList.toggle("on", positions.indexOf(parseInt(p.dataset.pos, 10)) >= 0);
     });
     dieEl.classList.add("show");
   }
 
-  function setTokenCell(cell, animateHop){
-    if(cell < 1){ tokenEl.style.opacity = "0"; return; }
-    tokenEl.style.opacity = "1";
+  // ---------------- token / board ----------------
+  function setTokenCell(cell, animateHop) {
+    if (cell < 1) { tokenEl.style.opacity = "0"; return; }
     var c = COORDS[String(cell)];
-    if(!c) return;
-    tokenEl.style.left = ((c[0] / BOARD_W) * 100) + "%";
-    tokenEl.style.top = ((c[1] / BOARD_H) * 100) + "%";
-    if(animateHop && !reduceMotion){
+    if (!c) return;
+    tokenEl.style.left = (c[0] / BOARD_W * 100) + "%";
+    tokenEl.style.top = (c[1] / BOARD_H * 100) + "%";
+    tokenEl.style.opacity = "1";
+    if (animateHop) {
       tokenEl.classList.remove("hop");
       void tokenEl.offsetWidth;
       tokenEl.classList.add("hop");
     }
   }
-
-  function updateStatus(cell, entered){
-    if(!entered){
+  function updateStatus(cell, entered) {
+    if (!entered) {
       cellLabel.textContent = "вне поля";
       progressBar.style.width = "0%";
       return;
@@ -472,212 +548,295 @@
     cellLabel.textContent = "клетка " + cell + " / " + TOTAL_CELLS;
     progressBar.style.width = ((cell / TOTAL_CELLS) * 100) + "%";
   }
-
-  async function walkPath(from, to){
-    var steps = [];
-    var dir = to >= from ? 1 : -1;
-    for(var i = from + dir; i !== to + dir; i += dir) steps.push(i);
-    for(var s = 0; s < steps.length; s++){
-      setTokenCell(steps[s], true);
-      updateStatus(steps[s], true);
-      await wait(200);
+  async function walkPath(path) {
+    for (var i = 0; i < path.length; i++) {
+      if (i > 0) await wait(320);
+      setTokenCell(path[i], true);
     }
   }
 
-  async function jumpTo(cell, label){
-    rollCaption.textContent = label;
-    setTokenCell(cell, true);
-    updateStatus(cell, true);
-    await wait(450);
-  }
-
-  async function spinDie(ms){
-    var elapsed = 0;
-    dieEl.classList.add("rolling");
-    var timer = setInterval(function(){ showFace(rollOne()); }, 70);
-    await wait(ms);
-    clearInterval(timer);
-    dieEl.classList.remove("rolling");
-  }
-
-  async function doMoveRoll(){
-    // Вход в игру — это такой же ход, как и любой другой, просто
-    // считается от 0 и требует, чтобы самый первый бросок оказался
-    // шестёркой (иначе ход сгорает без каскада вообще).
-    var wasEntering = !state.entered;
-    var base = wasEntering ? 0 : state.cell;
-
-    await spinDie(reduceMotion ? 0 : 500);
-    var firstRoll = rollOne();
-    showFace(firstRoll);
-
-    if(wasEntering && firstRoll !== 6){
-      rollCaption.textContent = "Выпало " + firstRoll + ". Нужна шестёрка, чтобы войти в игру.";
-      return;
-    }
-
-    var rolls = [firstRoll];
-    var streak = (firstRoll === 6) ? 1 : 0;
-    var burned = false;
-    var total = firstRoll;
-
-    if(firstRoll === 6){
-      while(true){
-        if(streak === 3){
-          rollCaption.textContent = "🔥 Три шестёрки подряд сгорают. Бросаем ещё раз.";
-          await wait(700);
-          await spinDie(reduceMotion ? 0 : 450);
-          var extra = rollOne();
-          showFace(extra);
-          rolls.push(extra);
-          burned = true;
-          total = (extra === 6) ? 6 : extra;
-          break;
-        }
-        rollCaption.textContent = "🎲 Выпало 6! Это даёт право бросить ещё раз.";
-        await wait(700);
-        await spinDie(reduceMotion ? 0 : 450);
-        var r = rollOne();
-        showFace(r);
-        rolls.push(r);
-        if(r === 6){ streak++; continue; }
-        total = rolls.reduce(function(a,b){return a+b;}, 0);
-        break;
+  // Те же сообщения о переброске при шестёрках, что в чате бота — см.
+  // _intermediate_messages в src/handlers/game.py.
+  function intermediateMessages(rolls) {
+    var msgs = [];
+    var streak = 0;
+    for (var i = 0; i < rolls.length - 1; i++) {
+      if (rolls[i] === 6) {
+        streak++;
+        msgs.push(streak === 3 ? "🔥 Три шестёрки подряд сгорают. Бросаем ещё раз." : "🎲 Выпало 6! Переброс.");
       }
     }
-
-    var entryPrefix = wasEntering ? "🎉 Выпала шестёрка — вы входите в игру! " : "";
-    var rawTarget = base + total;
-
-    if(rawTarget === FINISH){
-      if(wasEntering){ setTokenCell(FINISH, false); } else { await walkPath(base, FINISH); }
-      state.entered = true;
-      state.cell = FINISH;
-      saveState();
-      rollCaption.textContent = entryPrefix + "Броски: " + rolls.join(", ") + ". Вы попали точно на клетку " + FINISH + " — игра завершена! 🎉";
-      return;
+    return msgs;
+  }
+  async function animateRolls(rolls) {
+    dieEl.classList.add("rolling");
+    await wait(260);
+    dieEl.classList.remove("rolling");
+    for (var i = 0; i < rolls.length; i++) {
+      showFace(Math.min(rolls[i], 6));
+      if (i < rolls.length - 1) await wait(260);
     }
-
-    if(rawTarget > FINISH){
-      if(wasEntering){ setTokenCell(72, false); } else { await walkPath(base, 72); }
-      await jumpTo(51, entryPrefix + "Броски: " + rolls.join(", ") + ". Вы перешагнули клетку " + FINISH + " и по змее с клетки 72 спускаетесь на клетку 51.");
-      state.entered = true;
-      state.cell = 51;
-      saveState();
-      updateStatus(51, true);
-      return;
-    }
-
-    if(wasEntering){
-      setTokenCell(rawTarget, true);
-      updateStatus(rawTarget, true);
-    } else {
-      await walkPath(base, rawTarget);
-    }
-    state.entered = true;
-
-    var finalCell = rawTarget;
-    var sumText = rolls.length > 1 ? (" = " + total) : "";
-    var label = entryPrefix + "Броски: " + rolls.join(burned ? " (сгорели), затем " : " + ") + (burned ? "" : sumText) + ". Вы на клетке " + rawTarget + ".";
-
-    if(ARROWS[rawTarget]){
-      finalCell = ARROWS[rawTarget];
-      label = entryPrefix + "Броски: " + rolls.join(", ") + ". Стрела поднимает вас с клетки " + rawTarget + " на клетку " + finalCell + ".";
-      await jumpTo(finalCell, label);
-    } else if(SNAKES[rawTarget]){
-      finalCell = SNAKES[rawTarget];
-      label = entryPrefix + "Броски: " + rolls.join(", ") + ". Змея спускает вас с клетки " + rawTarget + " на клетку " + finalCell + ".";
-      await jumpTo(finalCell, label);
-    } else {
-      rollCaption.textContent = label;
-    }
-
-    state.cell = finalCell;
-    saveState();
-    updateStatus(finalCell, true);
   }
 
-  async function rollDice(){
-    if(rolling) return;
+  // ---------------- sheet (общее модальное окно) ----------------
+  var sheetBackdrop = document.getElementById("sheetBackdrop");
+  var sheetTitle = document.getElementById("sheetTitle");
+  var sheetBody = document.getElementById("sheetBody");
+  var sheetClose = document.getElementById("sheetClose");
+  var tabButtons = document.querySelectorAll("nav.tabs button");
+
+  function el(tag, opts) {
+    var e = document.createElement(tag);
+    opts = opts || {};
+    if (opts.cls) e.className = opts.cls;
+    if (opts.text !== undefined) e.textContent = opts.text;
+    return e;
+  }
+
+  function openSheet(title) {
+    sheetTitle.textContent = title;
+    sheetBody.innerHTML = "";
+    sheetBackdrop.classList.add("open");
+  }
+  function closeSheet() {
+    sheetBackdrop.classList.remove("open");
+    setActiveTab("dice");
+  }
+  function setActiveTab(tab) {
+    tabButtons.forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+  }
+
+  sheetClose.addEventListener("click", closeSheet);
+  sheetBackdrop.addEventListener("click", function (e) {
+    if (e.target === sheetBackdrop) closeSheet();
+  });
+
+  // ---------------- клетка + отклик ----------------
+  function renderCellCard(cell, resultText, canReflect) {
+    openSheet(cell.name);
+    if (resultText) sheetBody.appendChild(el("p", { cls: "muted", text: resultText }));
+    sheetBody.appendChild(el("p", { text: cell.description }));
+    if (cell.question) sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + cell.question }));
+    if (canReflect) renderReflectionForm();
+  }
+
+  function renderReflectionForm() {
+    sheetBody.appendChild(el("p", { cls: "muted", text: "Как хочешь оставить отклик на эту клетку?" }));
+
+    var textarea = document.createElement("textarea");
+    textarea.placeholder = "Можно написать здесь — или оставить при себе.";
+    sheetBody.appendChild(textarea);
+
+    var row = el("div", { cls: "row" });
+    var saveBtn = el("button", { cls: "btn primary", text: "Сохранить в дневник" });
+    var skipBtn = el("button", { cls: "btn", text: "🤐 Оставить при себе" });
+    row.appendChild(saveBtn);
+    row.appendChild(skipBtn);
+    sheetBody.appendChild(row);
+
+    saveBtn.addEventListener("click", function () {
+      var text = textarea.value.trim();
+      if (!text) return;
+      saveBtn.disabled = true;
+      skipBtn.disabled = true;
+      apiPost("/api/reflection", { choice: "text", text: text }).then(function () {
+        hideBanner();
+        sheetBody.innerHTML = "";
+        sheetBody.appendChild(el("p", { text: "📝 Записала в дневник." }));
+      }).catch(function () {
+        showBanner("Не получилось сохранить — проверь связь с ботом.");
+        saveBtn.disabled = false;
+        skipBtn.disabled = false;
+      });
+    });
+    skipBtn.addEventListener("click", function () {
+      saveBtn.disabled = true;
+      skipBtn.disabled = true;
+      apiPost("/api/reflection", { choice: "skip" }).then(function () {
+        hideBanner();
+        sheetBody.innerHTML = "";
+        sheetBody.appendChild(el("p", { text: "Хорошо, это останется только с тобой. 🤍" }));
+      }).catch(function () {
+        showBanner("Не получилось — проверь связь с ботом.");
+        saveBtn.disabled = false;
+        skipBtn.disabled = false;
+      });
+    });
+  }
+
+  function renderQuestionForm() {
+    openSheet("Твой вопрос к игре");
+    sheetBody.appendChild(el("p", { text: "🎉 Игра началась! Ты родился в игре!" }));
+    sheetBody.appendChild(el("p", {
+      cls: "muted",
+      text: "Напиши свой вопрос — точно в той формулировке, которую выбрал. Он должен быть открытым, не «да/нет»."
+    }));
+    var textarea = document.createElement("textarea");
+    textarea.placeholder = "Например: что мне важно понять про...";
+    sheetBody.appendChild(textarea);
+    var row = el("div", { cls: "row" });
+    var sendBtn = el("button", { cls: "btn primary", text: "Отправить" });
+    row.appendChild(sendBtn);
+    sheetBody.appendChild(row);
+    sendBtn.addEventListener("click", function () {
+      var text = textarea.value.trim();
+      if (!text) return;
+      sendBtn.disabled = true;
+      apiPost("/api/question", { text: text }).then(function (data) {
+        hideBanner();
+        sheetBody.innerHTML = "";
+        sheetBody.appendChild(el("p", { text: "📝 Записала твой вопрос." }));
+        setTimeout(function () {
+          renderCellCard(data.cell, null, data.can_reflect);
+        }, 450);
+      }).catch(function () {
+        showBanner("Не получилось сохранить — проверь связь с ботом.");
+        sendBtn.disabled = false;
+      });
+    });
+  }
+
+  function renderIntro(text) {
+    openSheet("Правила игры «Лила»");
+    text.split("\n\n").forEach(function (p) {
+      sheetBody.appendChild(el("p", { text: p }));
+    });
+  }
+
+  // ---------------- бросок кубика ----------------
+  var rolling = false;
+  async function rollDice() {
+    if (rolling) return;
     rolling = true;
     rollBtn.disabled = true;
-    try{
-      await doMoveRoll();
+    try {
+      var data = await apiPost("/api/roll", {});
+      hideBanner();
+
+      if (data.phase === "intro") {
+        renderIntro(data.text);
+        return;
+      }
+
+      await animateRolls(data.rolls || []);
+      var msgs = intermediateMessages(data.rolls || []);
+      for (var i = 0; i < msgs.length; i++) {
+        rollCaption.textContent = msgs[i];
+        await wait(500);
+      }
+
+      if (data.phase === "no_entry") {
+        rollCaption.textContent = data.result_text;
+        return;
+      }
+
+      if (data.phase === "need_question") {
+        setTokenCell(data.cell, true);
+        updateStatus(data.cell, true);
+        rollCaption.textContent = data.result_text;
+        renderQuestionForm();
+        return;
+      }
+
+      // data.phase === "landed"
+      await walkPath(data.path && data.path.length ? data.path : [data.cell.number]);
+      updateStatus(data.cell.number, true);
+      rollCaption.textContent = data.result_text;
+      renderCellCard(data.cell, null, data.can_reflect);
+    } catch (err) {
+      showBanner("Нет связи с ботом. Проверь, что бот и туннель запущены на компьютере.");
     } finally {
       rolling = false;
       rollBtn.disabled = false;
     }
   }
-
   rollBtn.addEventListener("click", rollDice);
 
-  // ---- bottom sheet (Дневник / Оракул stubs) ----
-  var sheetBackdrop = document.getElementById("sheetBackdrop");
-  var sheetTitle = document.getElementById("sheetTitle");
-  var sheetText = document.getElementById("sheetText");
-  var sheetClose = document.getElementById("sheetClose");
-  var tabButtons = document.querySelectorAll("nav.tabs button");
-
-  var SHEETS = {
-    diary: {
-      title: "Дневник",
-      text: "Здесь появятся ваши записи и размышления о пройденном пути — раздел откроется в одной из следующих версий."
-    },
-    oracle: {
-      title: "Оракул",
-      text: "Здесь будет карта дня от ИИ-ведущего — короткое размышление, связанное с вашей текущей клеткой."
+  // ---------------- дневник ----------------
+  function renderDiary(entries) {
+    sheetBody.innerHTML = "";
+    if (!entries.length) {
+      sheetBody.appendChild(el("p", { cls: "muted", text: "Пока дневник пуст. Попади на клетку и оставь первый отклик." }));
+      return;
     }
-  };
-
-  function setActiveTab(tab){
-    tabButtons.forEach(function(b){
-      b.classList.toggle("active", b.dataset.tab === tab);
+    entries.forEach(function (entry) {
+      var item = el("div", { cls: "entry" });
+      item.appendChild(el("div", { cls: "meta", text: (entry.date || "") + " · " + (entry.cell_name || "") }));
+      if (entry.format === "text" && entry.answer_text) {
+        item.appendChild(el("div", { cls: "text", text: entry.answer_text }));
+      } else if (entry.format === "voice") {
+        item.appendChild(el("div", { cls: "text muted", text: "🎤 голосовая запись — послушать можно в Telegram, в «Моём дневнике»" }));
+        if (entry.voice_transcript) {
+          item.appendChild(el("div", { cls: "text", text: "Распознано: " + entry.voice_transcript }));
+        }
+      }
+      sheetBody.appendChild(item);
     });
   }
-  function openSheet(tab){
-    var s = SHEETS[tab];
-    if(!s) return;
-    sheetTitle.textContent = s.title;
-    sheetText.textContent = s.text;
-    sheetBackdrop.classList.add("open");
+
+  // ---------------- оракул ----------------
+  function renderOracleIntro() {
+    openSheet("Оракул");
+    sheetBody.appendChild(el("p", { text: "🔮 Сформулируй свой вопрос — или просто подумай о том, что тебя сейчас тревожит." }));
+    var row = el("div", { cls: "row" });
+    var readyBtn = el("button", { cls: "btn primary", text: "✅ Я готов(а)" });
+    row.appendChild(readyBtn);
+    sheetBody.appendChild(row);
+    readyBtn.addEventListener("click", function () {
+      readyBtn.disabled = true;
+      apiPost("/api/oracle", {}).then(function (data) {
+        hideBanner();
+        sheetBody.innerHTML = "";
+        sheetBody.appendChild(el("p", { cls: "q", text: data.label }));
+        sheetBody.appendChild(el("p", { text: data.text }));
+      }).catch(function () {
+        showBanner("Не получилось связаться с оракулом — проверь связь с ботом.");
+        readyBtn.disabled = false;
+      });
+    });
   }
-  function closeSheet(){
-    sheetBackdrop.classList.remove("open");
-    setActiveTab("dice");
-  }
-  tabButtons.forEach(function(btn){
-    btn.addEventListener("click", function(){
+
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
       var tab = btn.dataset.tab;
-      if(tab === "dice"){ setActiveTab("dice"); return; }
+      if (tab === "dice") { setActiveTab("dice"); return; }
       setActiveTab(tab);
-      openSheet(tab);
+      if (tab === "diary") {
+        openSheet("Твой дневник");
+        sheetBody.appendChild(el("p", { cls: "muted", text: "Загружаю…" }));
+        apiGet("/api/diary").then(function (data) {
+          hideBanner();
+          renderDiary(data.entries || []);
+        }).catch(function () {
+          sheetBody.innerHTML = "";
+          sheetBody.appendChild(el("p", { cls: "muted", text: "Не удалось загрузить дневник — проверь связь с ботом." }));
+        });
+      } else if (tab === "oracle") {
+        renderOracleIntro();
+      }
     });
   });
-  sheetClose.addEventListener("click", closeSheet);
-  sheetBackdrop.addEventListener("click", function(e){
-    if(e.target === sheetBackdrop) closeSheet();
-  });
 
-  // ---- boot ----
+  // ---------------- старт ----------------
   buildDie();
-  setTokenCell(state.cell, false);
-  updateStatus(state.cell, state.entered);
-  rollCaption.textContent = state.entered
-    ? ("Сейчас вы на клетке " + state.cell + " из " + TOTAL_CELLS + ".")
-    : "Нажмите «Бросить», чтобы попытаться войти в игру — нужна шестёрка.";
-
-  function boot(initial){
-    if(initial && typeof initial.cell === "number"){
-      state.cell = initial.cell;
-      state.entered = !!initial.entered;
+  (async function boot() {
+    if (!initData) {
+      showBanner("Открой мини-игру кнопкой в боте, чтобы она увидела, кто играет.");
+    }
+    try {
+      var state = await apiGet("/api/state");
       setTokenCell(state.cell, false);
       updateStatus(state.cell, state.entered);
+      rollCaption.textContent = state.entered
+        ? ("Сейчас вы на клетке " + state.cell + " из " + TOTAL_CELLS + ".")
+        : "Нажмите «Бросить», чтобы попытаться войти в игру — нужна шестёрка.";
+      if (initData) hideBanner();
+    } catch (err) {
+      updateStatus(0, false);
+      showBanner("Нет связи с ботом. Проверь, что бот и туннель запущены на компьютере.");
     }
-  }
-  if(window.claude && window.claude.hot){
-    window.claude.hot.snapshot(function(){ return {cell: state.cell, entered: state.entered}; });
-    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot(window.claude.hot.data || {});
-  }
+  })();
 })();
-
 </script>

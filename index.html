@@ -123,26 +123,10 @@
     gap:10px;
   }
   .status .label{
-    font-size:12.5px;
+    font-size:13px;
     color:var(--ink-soft);
     white-space:nowrap;
     font-variant-numeric:tabular-nums;
-  }
-  .bar{
-    flex:1;
-    height:6px;
-    border-radius:99px;
-    background:var(--panel-2);
-    border:1px solid var(--line);
-    overflow:hidden;
-  }
-  .bar > i{
-    display:block;
-    height:100%;
-    border-radius:99px;
-    background:linear-gradient(90deg,var(--violet),var(--gold));
-    transition:width .5s cubic-bezier(.4,0,.2,1);
-    width:0%;
   }
 
   /* ---------- board ---------- */
@@ -423,8 +407,7 @@
       <button class="exit-btn" id="exitBtn" aria-label="Выйти">✕</button>
     </div>
     <div class="status">
-      <div class="bar"><i id="progressBar"></i></div>
-      <span class="label" id="cellLabel">клетка 1 / 72</span>
+      <span class="label" id="cellLabel">клетка 1</span>
     </div>
   </header>
 
@@ -497,7 +480,7 @@
   var rollBtn = document.getElementById("rollBtn");
   var rollCaption = document.getElementById("rollCaption");
   var cellLabel = document.getElementById("cellLabel");
-  var progressBar = document.getElementById("progressBar");
+  var finishCell = null; // приходит из /api/state при старте (game_board.FINISH)
   var connBanner = document.getElementById("connBanner");
 
   function showBanner(text) {
@@ -564,11 +547,11 @@
   function updateStatus(cell, entered) {
     if (!entered) {
       cellLabel.textContent = "вне поля";
-      progressBar.style.width = "0%";
       return;
     }
-    cellLabel.textContent = "клетка " + cell + " / " + TOTAL_CELLS;
-    progressBar.style.width = ((cell / TOTAL_CELLS) * 100) + "%";
+    cellLabel.textContent = (finishCell && cell === finishCell)
+      ? "🎉 финиш — клетка " + cell
+      : "клетка " + cell;
   }
   async function walkPath(path) {
     for (var i = 0; i < path.length; i++) {
@@ -630,7 +613,7 @@
 
   // ---------------- клетка + отклик ----------------
   function renderCellCard(cell, resultText, canReflect) {
-    openSheet(cell.name);
+    openSheet(cell.is_finish ? "🎉 Финиш!" : cell.name);
     if (resultText) sheetBody.appendChild(el("p", { cls: "muted", text: resultText }));
     sheetBody.appendChild(el("p", { text: cell.description }));
     if (cell.question) sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + cell.question }));
@@ -759,7 +742,7 @@
       await walkPath(data.path && data.path.length ? data.path : [data.cell.number]);
       updateStatus(data.cell.number, true);
       rollCaption.textContent = data.result_text;
-      renderCellCard(data.cell, null, data.can_reflect);
+      renderCellCard(data.cell, data.result_text, data.can_reflect);
     } catch (err) {
       showBanner("Нет связи с ботом. Проверь, что бот и туннель запущены на компьютере.");
     } finally {
@@ -807,10 +790,11 @@
     }
     try {
       var state = await apiGet("/api/state");
+      finishCell = state.finish_cell || null;
       setTokenCell(state.cell, false);
       updateStatus(state.cell, state.entered);
       rollCaption.textContent = state.entered
-        ? ("Сейчас вы на клетке " + state.cell + " из " + TOTAL_CELLS + ".")
+        ? ("Сейчас вы на клетке " + state.cell + ".")
         : "Нажмите «Бросить», чтобы попытаться войти в игру — нужна шестёрка.";
       if (initData) hideBanner();
     } catch (err) {

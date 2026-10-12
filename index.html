@@ -468,6 +468,20 @@
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function wait(ms) { return new Promise(function (r) { setTimeout(r, reduceMotion ? 0 : ms); }); }
 
+  // Сообщения, которые по очереди показываются, пока не выпадает шестёрка
+  // (то есть игрок ещё не вошёл в игру) — после списка снова идут по кругу,
+  // чтобы при долгой попытке попасть в игру сообщения не кончались.
+  var ENTRY_RETRY_MESSAGES = [
+    "Давай переформулируем вопрос. Как переформулируешь — снова нажимай «Бросить».",
+    "Пока игра не впускает. Попробуй сформулировать так, чтобы это касалось лично тебя и в позитивном ключе: ✅ «Что мне нужно улучшить в себе, чтобы…», а не ❌ «Что мне мешает…». Сформулируешь — кидай кубик.",
+    "И снова не шестёрка.",
+    "Эх… А может, сегодня стоит задать вопрос на другую тему? Сформулируешь — кидай кубик снова.",
+    "Опять не шестёрка. Может, вопрос пока звучит слишком общо? Попробуй сузить его до того, что касается именно тебя сейчас. Сформулируешь — кидай кубик.",
+    "Шестёрка не торопится 😅 Проверь: это вопрос, который ты правда хочешь для себя прояснить, а не вопрос ради вопроса? Готов — бросай ещё раз.",
+    "Снова мимо… А если спросить о том, что сейчас для тебя важнее всего — здесь и сейчас? Сформулируешь — жми «Бросить»."
+  ];
+  var entryAttempt = 0;
+
   var tokenEl = document.getElementById("token");
   var dieEl = document.getElementById("die");
   var rollBtn = document.getElementById("rollBtn");
@@ -746,11 +760,13 @@
       }
 
       if (data.phase === "no_entry") {
-        rollCaption.textContent = data.result_text + " Пока ждёшь шестёрку — подумай над открытым вопросом к игре.";
+        rollCaption.textContent = ENTRY_RETRY_MESSAGES[entryAttempt % ENTRY_RETRY_MESSAGES.length];
+        entryAttempt++;
         return;
       }
 
       if (data.phase === "need_question") {
+        entryAttempt = 0;
         setTokenCell(data.cell, true);
         updateStatus(data.cell, true);
         rollCaption.textContent = data.result_text;
@@ -815,7 +831,7 @@
       updateStatus(state.cell, state.entered);
       rollCaption.textContent = state.entered
         ? ("Сейчас вы на клетке " + state.cell + ".")
-        : "Сначала придумай открытый вопрос к игре. Как выпадет шестёрка, я попрошу тебя его записать. Жми «Бросить»!";
+        : "Перед тем как кинуть кубик, сформулируй вопрос к игре и затем нажми «Бросить». Если твой вопрос сформулирован, то выпадет шесть и твоя игра началась!";
       if (initData) hideBanner();
     } catch (err) {
       updateStatus(0, false);

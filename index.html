@@ -462,13 +462,6 @@
     try {
       tg.ready();
       tg.expand();
-      // Если игрок всё же закроет мини-апп системным крестиком Telegram
-      // (а не нашей кнопкой ✕ в шапке), Telegram сам спросит
-      // подтверждение — это его собственное окно с общим текстом, без
-      // наших двух вариантов (ограничение платформы, обойти нельзя).
-      if (typeof tg.enableClosingConfirmation === "function") {
-        tg.enableClosingConfirmation();
-      }
     } catch (e) {}
   }
 

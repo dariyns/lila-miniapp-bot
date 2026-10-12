@@ -617,7 +617,34 @@
     if (resultText) sheetBody.appendChild(el("p", { cls: "muted", text: resultText }));
     sheetBody.appendChild(el("p", { text: cell.description }));
     if (cell.question) sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + cell.question }));
-    if (canReflect) renderReflectionForm();
+    if (canReflect) {
+      renderAiHelper();
+      renderReflectionForm();
+    }
+  }
+
+  // Кнопка «Спросить ИИ-помощника» — личный вопрос от ГигаЧата по этой
+  // клетке запрашивается только по нажатию, не автоматически при каждом
+  // ходе (поэтому карточка клетки открывается сразу, не дожидаясь ИИ).
+  function renderAiHelper() {
+    var row = el("div", { cls: "row" });
+    var aiBtn = el("button", { cls: "btn", text: "✨ Спросить ИИ-помощника" });
+    row.appendChild(aiBtn);
+    sheetBody.appendChild(row);
+
+    aiBtn.addEventListener("click", function () {
+      aiBtn.disabled = true;
+      aiBtn.textContent = "Думаю…";
+      apiPost("/api/cell_ai", {}).then(function (data) {
+        row.innerHTML = "";
+        row.className = "";
+        row.appendChild(el("p", { cls: "q", text: "✨ " + data.question }));
+      }).catch(function () {
+        aiBtn.disabled = false;
+        aiBtn.textContent = "✨ Спросить ИИ-помощника";
+        showBanner("ИИ-помощник не ответил — проверь связь с ботом.");
+      });
+    });
   }
 
   function renderReflectionForm() {

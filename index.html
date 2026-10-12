@@ -746,7 +746,7 @@
       }
 
       if (data.phase === "no_entry") {
-        rollCaption.textContent = data.result_text;
+        rollCaption.textContent = data.result_text + " Пока ждёшь шестёрку — подумай над открытым вопросом к игре.";
         return;
       }
 
@@ -815,7 +815,7 @@
       updateStatus(state.cell, state.entered);
       rollCaption.textContent = state.entered
         ? ("Сейчас вы на клетке " + state.cell + ".")
-        : "Нажмите «Бросить», чтобы попытаться войти в игру — нужна шестёрка.";
+        : "Прежде чем бросать кубик, сформулируй свой открытый вопрос к игре — не «да/нет», а например «Что мне важно понять про…». Когда вопрос готов, жми «Бросить» — нужна шестёрка, чтобы войти в игру.";
       if (initData) hideBanner();
     } catch (err) {
       updateStatus(0, false);

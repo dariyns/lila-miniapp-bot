@@ -665,12 +665,13 @@
     }
   }
 
-  // Кнопка «Спросить ИИ-помощника» — личный вопрос от ГигаЧата по этой
-  // клетке запрашивается только по нажатию, не автоматически при каждом
-  // ходе (поэтому карточка клетки открывается сразу, не дожидаясь ИИ).
+  // Кнопка «Сформулировать вопрос от помощника» — личный вопрос от
+  // ГигаЧата по этой клетке запрашивается только по нажатию, не
+  // автоматически при каждом ходе (поэтому карточка клетки открывается
+  // сразу, не дожидаясь ИИ).
   function renderAiHelper() {
     var row = el("div", { cls: "row" });
-    var aiBtn = el("button", { cls: "btn", text: "✨ Спросить ИИ-помощника" });
+    var aiBtn = el("button", { cls: "btn", text: "✨ Сформулировать вопрос от помощника" });
     row.appendChild(aiBtn);
     sheetBody.appendChild(row);
 
@@ -683,7 +684,7 @@
         row.appendChild(el("p", { cls: "q", text: "✨ " + data.question }));
       }).catch(function () {
         aiBtn.disabled = false;
-        aiBtn.textContent = "✨ Спросить ИИ-помощника";
+        aiBtn.textContent = "✨ Сформулировать вопрос от помощника";
         showBanner("ИИ-помощник не ответил — проверь связь с ботом.");
       });
     });
@@ -756,6 +757,13 @@
     var sendBtn = el("button", { cls: "btn primary", text: "Отправить" });
     row.appendChild(sendBtn);
     sheetBody.appendChild(row);
+
+    // Пока вопрос не записан, дальше играть нельзя (сервер всё равно не
+    // даст бросить кубик — см. handle_roll в src/webapp/api.py), поэтому
+    // прячем и общую липкую кнопку «Понятно», чтобы не создавать иллюзию
+    // лёгкого выхода из этого шага.
+    sheetClose.style.display = "none";
+
     sendBtn.addEventListener("click", function () {
       var text = textarea.value.trim();
       if (!text) return;
@@ -972,9 +980,17 @@
       finishCell = state.finish_cell || null;
       setTokenCell(state.cell, false);
       updateStatus(state.cell, state.entered, state.cell_name);
-      rollCaption.textContent = state.entered
-        ? ("Сейчас вы на клетке " + state.cell + (state.cell_name ? " — " + state.cell_name : "") + ".")
-        : "Перед тем как кинуть кубик, сформулируй вопрос к игре и затем нажми «Бросить». Если твой вопрос сформулирован верно, то выпадет шесть и твоя игра началась!";
+      if (state.entered && state.awaiting_question) {
+        // Вопрос к игре ещё не записан (например, игрок закрыл форму, не
+        // дописав его, и переоткрыл мини-апп) — не даём бросать кубик,
+        // пока не запишет; см. handle_roll в src/webapp/api.py.
+        rollCaption.textContent = "Сначала запиши вопрос, с которым ты вошёл в игру.";
+        renderQuestionForm();
+      } else {
+        rollCaption.textContent = state.entered
+          ? ("Сейчас вы на клетке " + state.cell + (state.cell_name ? " — " + state.cell_name : "") + ".")
+          : "Перед тем как кинуть кубик, сформулируй вопрос к игре и затем нажми «Бросить». Если твой вопрос сформулирован верно, то выпадет шесть и твоя игра началась!";
+      }
       if (initData) hideBanner();
     } catch (err) {
       updateStatus(0, false);

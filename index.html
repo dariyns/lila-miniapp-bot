@@ -641,6 +641,7 @@
   function openSheet(title) {
     sheetTitle.textContent = title;
     sheetBody.innerHTML = "";
+    sheetClose.style.display = "";
     sheetBackdrop.classList.add("open");
   }
   function closeSheet() {
@@ -702,6 +703,13 @@
     row.appendChild(skipBtn);
     sheetBody.appendChild(row);
 
+    // Пока виден выбор «Сохранить в дневник» / «Оставить при себе» —
+    // прячем общую липкую кнопку «Понятно»: она «прилипает» к низу окна
+    // (position:sticky) и перекрывала эти две кнопки, из-за чего
+    // казалось, что все три делают одно и то же. Сами кнопки ниже сами
+    // закрывают окно после ответа — отдельное «Понятно» тут не нужно.
+    sheetClose.style.display = "none";
+
     saveBtn.addEventListener("click", function () {
       var text = textarea.value.trim();
       if (!text) return;
@@ -711,6 +719,7 @@
         hideBanner();
         sheetBody.innerHTML = "";
         sheetBody.appendChild(el("p", { text: "📝 Записала в дневник." }));
+        setTimeout(closeSheet, 900);
       }).catch(function () {
         showBanner("Не получилось сохранить — проверь связь с ботом.");
         saveBtn.disabled = false;
@@ -724,6 +733,7 @@
         hideBanner();
         sheetBody.innerHTML = "";
         sheetBody.appendChild(el("p", { text: "Хорошо, это останется только с тобой. 🤍" }));
+        setTimeout(closeSheet, 900);
       }).catch(function () {
         showBanner("Не получилось — проверь связь с ботом.");
         saveBtn.disabled = false;

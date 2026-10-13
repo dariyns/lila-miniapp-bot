@@ -221,6 +221,18 @@
     transition:opacity .12s, transform .12s;
   }
   .die.show .pip.on{opacity:1;transform:scale(1)}
+  .die:not(.show)::before{
+    content:"";
+    position:absolute;
+    inset:7px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='rgb(107,74,34)' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M50,80 C41,58 41,34 50,16 C59,34 59,58 50,80 Z'/%3E%3Cpath d='M50,80 C41,58 41,34 50,16 C59,34 59,58 50,80 Z' transform='rotate(25 50 80)'/%3E%3Cpath d='M50,80 C41,58 41,34 50,16 C59,34 59,58 50,80 Z' transform='rotate(-25 50 80)'/%3E%3Cpath d='M50,80 C44,62 44,42 50,30 C56,42 56,62 50,80 Z' transform='rotate(50 50 80)'/%3E%3Cpath d='M50,80 C44,62 44,42 50,30 C56,42 56,62 50,80 Z' transform='rotate(-50 50 80)'/%3E%3Cpath d='M33,81 Q50,91 67,81'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center 55%;
+    opacity:.6;
+    pointer-events:none;
+    z-index:0;
+  }
   .die.rolling{animation:shake .5s ease}
   @keyframes shake{
     0%,100%{transform:rotate(0)}

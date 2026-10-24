@@ -782,13 +782,6 @@
     });
   }
 
-  function renderIntro(text) {
-    openSheet("Правила игры «Лила»");
-    text.split("\n\n").forEach(function (p) {
-      sheetBody.appendChild(el("p", { text: p }));
-    });
-  }
-
   // ---------------- бросок кубика ----------------
   var rolling = false;
   async function rollDice() {
@@ -798,11 +791,6 @@
     try {
       var data = await apiPost("/api/roll", {});
       hideBanner();
-
-      if (data.phase === "intro") {
-        renderIntro(data.text);
-        return;
-      }
 
       await animateRolls(data.rolls || []);
       var msgs = intermediateMessages(data.rolls || []);

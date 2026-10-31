@@ -569,7 +569,7 @@
     return CARD_QUESTIONS[Math.floor(Math.random() * CARD_QUESTIONS.length)];
   }
 
-  function renderCard() {
+  function renderCard(inGame) {
     var question = randomCardQuestion();
     openSheet("🃏 Метафорическая карта");
     var img = document.createElement("img");
@@ -579,7 +579,10 @@
     sheetBody.appendChild(img);
     sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + question }));
     apiPost("/api/card", { question: question }).then(function () {
-      renderReflectionForm();
+      var label = inGame
+        ? "Твой отклик на карту:"
+        : "Что откликнулось в этой картинке? Можно записать, если хочешь, — это поможет найти вопрос:";
+      renderReflectionForm(label);
     }).catch(function () {
       showBanner("Не получилось связаться с ботом — проверь связь и попробуй ещё раз.");
     });
@@ -597,7 +600,7 @@
     row.appendChild(noBtn);
     sheetBody.appendChild(row);
     sheetClose.style.display = "none";
-    yesBtn.addEventListener("click", renderCard);
+    yesBtn.addEventListener("click", function () { renderCard(false); });
     noBtn.addEventListener("click", closeSheet);
   }
 
@@ -962,8 +965,8 @@
     });
   }
 
-  function renderReflectionForm() {
-    sheetBody.appendChild(el("p", { cls: "muted", text: "Твой отклик на эту клетку:" }));
+  function renderReflectionForm(label) {
+    sheetBody.appendChild(el("p", { cls: "muted", text: label || "Твой отклик на эту клетку:" }));
 
     var textarea = document.createElement("textarea");
     textarea.placeholder = "Можно написать здесь — или оставить при себе.";
@@ -1109,7 +1112,7 @@
     }
   }
   rollBtn.addEventListener("click", rollDice);
-  cardBtn.addEventListener("click", renderCard);
+  cardBtn.addEventListener("click", function () { renderCard(true); });
   practiceBtn.addEventListener("click", renderPracticeList);
 
   // ---------------- выход из игры ----------------

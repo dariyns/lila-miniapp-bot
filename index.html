@@ -837,6 +837,10 @@
       cls: "muted",
       text: "Напиши свой вопрос — точно в той формулировке, которая сейчас была, когда выпала шестёрка."
     }));
+    sheetBody.appendChild(el("p", {
+      cls: "muted",
+      text: "Это нужно, чтобы нейро-ведущий задавал тебе вопросы по клеткам с учётом твоего запроса."
+    }));
     var textarea = document.createElement("textarea");
     textarea.placeholder = "Например: что мне важно понять про...";
     sheetBody.appendChild(textarea);

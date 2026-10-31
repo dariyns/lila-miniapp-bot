@@ -277,6 +277,21 @@
   .roll-btn:disabled{opacity:.55}
   :root[data-theme="dark"] .roll-btn, @media (prefers-color-scheme:dark){ }
 
+  .card-btn{
+    appearance:none;
+    border:1px solid var(--gold-strong);
+    font-family:inherit;
+    font-weight:600;
+    font-size:13.5px;
+    color:var(--ink);
+    background:transparent;
+    padding:10px 14px;
+    border-radius:12px;
+    width:100%;
+    margin-top:10px;
+  }
+  .card-btn:active{opacity:.7}
+
   /* ---------- bottom nav ---------- */
   nav.tabs{
     position:sticky;
@@ -386,6 +401,7 @@
   #sheetBody{font-size:14px;line-height:1.55;color:var(--ink-soft)}
   #sheetBody p{margin:0 0 10px}
   #sheetBody .q{color:var(--ink);font-style:italic;margin-top:10px}
+  #sheetBody .card-img{width:100%;border-radius:14px;display:block;margin-bottom:6px}
   #sheetBody textarea{
     width:100%;
     min-height:90px;
@@ -459,6 +475,7 @@
       </div>
       <button class="roll-btn" id="rollBtn">Бросить</button>
     </div>
+    <button class="card-btn" id="cardBtn" hidden>🃏 Метафорическая карта</button>
   </main>
 
 </div>
@@ -537,9 +554,64 @@
   var retryAttemptRephrase = 0;
   var retryAttemptEither = 0;
 
+  // Метафорические карты: показываются (а) по предложению — каждый 5-й
+  // неудачный бросок подряд на входе в игру, пока формулируется вопрос,
+  // и (б) по кнопке «Метафорическая карта», доступной в любой момент уже
+  // во время самой игры (после входа). Картинки лежат статикой рядом с
+  // этой страницей на GitHub Pages — cards/card-01.jpg … card-85.jpg.
+  var CARD_COUNT = 85;
+  var CARD_QUESTIONS = [
+    "На какие мысли наводит эта картинка? О чём она для тебя?",
+    "Глядя на картинку, какие ассоциации она у тебя вызывает?",
+    "Как это связано с твоим вопросом, если посмотреть на картинку метафорично?",
+    "Какую подсказку несёт для тебя этот образ?"
+  ];
+  var noEntryStreak = 0;
+
+  function randomCardPath() {
+    var n = 1 + Math.floor(Math.random() * CARD_COUNT);
+    return "cards/card-" + (n < 10 ? "0" + n : n) + ".jpg";
+  }
+  function randomCardQuestion() {
+    return CARD_QUESTIONS[Math.floor(Math.random() * CARD_QUESTIONS.length)];
+  }
+
+  function renderCard() {
+    var question = randomCardQuestion();
+    openSheet("🃏 Метафорическая карта");
+    var img = document.createElement("img");
+    img.src = randomCardPath();
+    img.alt = "Метафорическая карта";
+    img.className = "card-img";
+    sheetBody.appendChild(img);
+    sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + question }));
+    apiPost("/api/card", { question: question }).then(function () {
+      renderReflectionForm();
+    }).catch(function () {
+      showBanner("Не получилось связаться с ботом — проверь связь и попробуй ещё раз.");
+    });
+  }
+
+  function offerCard() {
+    openSheet("Хочешь карту?");
+    sheetBody.appendChild(el("p", {
+      text: "Пока вопрос не впускает тебя в игру. Хочешь, вытянем метафорическую карту — может, она подскажет, куда двигаться?"
+    }));
+    var row = el("div", { cls: "row" });
+    var yesBtn = el("button", { cls: "btn primary", text: "Да, хочу карту" });
+    var noBtn = el("button", { cls: "btn", text: "Нет, попробую сам" });
+    row.appendChild(yesBtn);
+    row.appendChild(noBtn);
+    sheetBody.appendChild(row);
+    sheetClose.style.display = "none";
+    yesBtn.addEventListener("click", renderCard);
+    noBtn.addEventListener("click", closeSheet);
+  }
+
   var tokenEl = document.getElementById("token");
   var dieEl = document.getElementById("die");
   var rollBtn = document.getElementById("rollBtn");
+  var cardBtn = document.getElementById("cardBtn");
   var rollCaption = document.getElementById("rollCaption");
   var cellLabel = document.getElementById("cellLabel");
   var finishCell = null; // приходит из /api/state при старте (game_board.FINISH)
@@ -607,6 +679,7 @@
     }
   }
   function updateStatus(cell, entered, cellName) {
+    cardBtn.hidden = !entered;
     if (!entered) {
       cellLabel.textContent = "вне поля";
       return;
@@ -822,6 +895,11 @@
       }
 
       if (data.phase === "no_entry") {
+        noEntryStreak++;
+        if (noEntryStreak % 5 === 0) {
+          offerCard();
+          return;
+        }
         var rolledValue = (data.rolls && data.rolls.length) ? data.rolls[data.rolls.length - 1] : null;
         var pool, idx;
         if (rolledValue === 1 || rolledValue === 2) {
@@ -842,6 +920,7 @@
         retryAttemptChangeTopic = 0;
         retryAttemptRephrase = 0;
         retryAttemptEither = 0;
+        noEntryStreak = 0;
         setTokenCell(data.cell, true);
         updateStatus(data.cell, true, data.cell_name);
         rollCaption.textContent = data.result_text;
@@ -862,6 +941,7 @@
     }
   }
   rollBtn.addEventListener("click", rollDice);
+  cardBtn.addEventListener("click", renderCard);
 
   // ---------------- выход из игры ----------------
   var exitBtn = document.getElementById("exitBtn");

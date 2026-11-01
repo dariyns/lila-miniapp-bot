@@ -445,6 +445,23 @@
     border:none;
   }
   #sheetBody .muted{color:var(--ink-soft)}
+  #sheetBody .offer-note{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:color-mix(in srgb, var(--gold) 14%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+    font-size:13px;
+    color:var(--ink);
+  }
+  #sheetBody .offer-note .sub-badge{
+    font-weight:600;
+    color:var(--violet);
+  }
+  #sheetBody .offer-note .sub-badge::before{
+    content:"★ ";
+    color:var(--gold-strong);
+  }
   #sheetBody .entry{
     padding:10px 0;
     border-bottom:1px solid var(--line);
@@ -603,8 +620,14 @@
   function offerCard() {
     openSheet("Хочешь карту?");
     sheetBody.appendChild(el("p", {
-      text: "Если долго не получается войти в игру, можно вытянуть метафорическую карту — она подскажет, в каком направлении двигаться. Бесплатно доступна сейчас. В подписке — без ограничений."
+      text: "Если долго не получается войти в игру, можно вытянуть метафорическую карту — она подскажет, в каком направлении двигаться."
     }));
+    var note = el("p", { cls: "offer-note" });
+    note.appendChild(document.createTextNode("Сейчас это бесплатно. "));
+    var badge = el("span", { cls: "sub-badge", text: "Подписка" });
+    note.appendChild(badge);
+    note.appendChild(document.createTextNode(" — без ограничений."));
+    sheetBody.appendChild(note);
     var row = el("div", { cls: "row" });
     var yesBtn = el("button", { cls: "btn primary", text: "Да, хочу карту" });
     var noBtn = el("button", { cls: "btn", text: "Нет, попробую сам" });

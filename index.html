@@ -1043,7 +1043,7 @@
       apiPost("/api/reflection", { choice: "text", text: text }).then(function () {
         hideBanner();
         sheetBody.innerHTML = "";
-        sheetBody.appendChild(el("p", { text: "📝 Записала в дневник." }));
+        sheetBody.appendChild(el("p", { text: "📝 Записал в дневник." }));
         setTimeout(closeSheet, 900);
       }).catch(function () {
         showBanner("Не получилось сохранить — проверь связь с ботом.");
@@ -1111,9 +1111,9 @@
   // раз показать карточку клетки. Без этого человек (особенно если видит
   // игру впервые) не понимает, что происходит на поле.
   function renderQuestionSavedIntro(cell, canReflect) {
-    openSheet("Записала твой вопрос");
+    openSheet("Записал твой вопрос");
     sheetBody.appendChild(el("p", {
-      text: "Запомни: когда на кубике выпадает шестёрка — по правилам игры это значит бросить ещё раз, а очки сложатся. Я буду делать это за тебя автоматически, чтобы было проще."
+      text: "И сейчас мы кинем ещё раз кубик, так как правило в игре таково: шестёрка даёт право на повторный бросок, и я делаю это за тебя автоматически."
     }));
     var okBtn = el("button", { cls: "btn primary", text: "Ок" });
     sheetBody.appendChild(okBtn);

@@ -888,7 +888,7 @@
   }
   async function walkPath(path) {
     for (var i = 0; i < path.length; i++) {
-      if (i > 0) await wait(320);
+      if (i > 0) await wait(820);
       setTokenCell(path[i], true);
     }
   }
@@ -948,6 +948,14 @@
   // ---------------- клетка + отклик ----------------
   function renderCellCard(cell, resultText, canReflect) {
     openSheet(cell.is_finish ? "🎉 Финиш!" : cell.name);
+    if (cell.number) {
+      var cellImg = document.createElement("img");
+      var n = cell.number < 10 ? "0" + cell.number : String(cell.number);
+      cellImg.src = "cells/cell-" + n + ".jpg";
+      cellImg.alt = "Клетка " + cell.number;
+      cellImg.className = "card-img";
+      sheetBody.appendChild(cellImg);
+    }
     if (resultText) sheetBody.appendChild(el("p", { cls: "muted", text: resultText }));
     sheetBody.appendChild(el("p", { text: cell.description }));
     if (cell.question) sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + cell.question }));
@@ -1067,15 +1075,27 @@
       apiPost("/api/question", { text: text }).then(function (data) {
         hideBanner();
         showUserQuestion(text);
-        sheetBody.innerHTML = "";
-        sheetBody.appendChild(el("p", { text: "📝 Записала твой вопрос." }));
-        setTimeout(function () {
-          renderCellCard(data.cell, null, data.can_reflect);
-        }, 450);
+        renderQuestionSavedIntro(data.cell, data.can_reflect);
       }).catch(function () {
         showBanner("Не получилось сохранить — проверь связь с ботом.");
         sendBtn.disabled = false;
       });
+    });
+  }
+
+  // Короткая пауза с объяснением правила шестёрки — перед тем как первый
+  // раз показать карточку клетки. Без этого человек (особенно если видит
+  // игру впервые) не понимает, что происходит на поле.
+  function renderQuestionSavedIntro(cell, canReflect) {
+    openSheet("Записала твой вопрос");
+    sheetBody.appendChild(el("p", {
+      text: "Запомни: когда на кубике выпадает шестёрка — по правилам игры это значит бросить ещё раз, а очки сложатся. Я буду делать это за тебя автоматически, чтобы было проще."
+    }));
+    var okBtn = el("button", { cls: "btn primary", text: "Ок" });
+    sheetBody.appendChild(okBtn);
+    sheetClose.style.display = "none";
+    okBtn.addEventListener("click", function () {
+      renderCellCard(cell, null, canReflect);
     });
   }
 

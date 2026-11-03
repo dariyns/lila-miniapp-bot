@@ -795,7 +795,7 @@
   var currentPracticeCell = null;
   function renderPracticeList() {
     var names = PRACTICES_BY_CELL[currentPracticeCell] || [];
-    openSheet("🌿 Практика к клетке");
+    openSheet("🌿 Практика к клетке " + currentPracticeCell);
     sheetBody.appendChild(el("p", {
       cls: "muted",
       text: "Выбери, что откликается, — и сделай сам(а), в своём темпе."

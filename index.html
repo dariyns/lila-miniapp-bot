@@ -833,6 +833,7 @@
     userQuestionLabel.textContent = text;
     userQuestionLabel.hidden = false;
   }
+  var NEW_GAME_CAPTION = "Перед тем как кинуть кубик, сформулируй вопрос к игре и затем нажми «Бросить». Если твой вопрос сформулирован верно, то выпадет шесть и твоя игра началась!";
   var finishCell = null; // приходит из /api/state при старте (game_board.FINISH)
   var connBanner = document.getElementById("connBanner");
 
@@ -967,8 +968,24 @@
     sheetClose.style.display = "";
     sheetBackdrop.classList.add("open");
   }
+  // После финиша (клетка 68) партия на сервере уже сброшена: как только
+  // игрок закроет окно финиша любым способом, экран переходит в новую игру.
+  var finishPending = false;
+  function resetToNewGame() {
+    userQuestionLabel.textContent = "";
+    userQuestionLabel.hidden = true;
+    setTokenCell(0, false);
+    updateStatus(0, false);
+    noEntryStreak = 0;
+    retryAttempt = 0;
+    rollCaption.textContent = NEW_GAME_CAPTION;
+  }
   function closeSheet() {
     sheetBackdrop.classList.remove("open");
+    if (finishPending) {
+      finishPending = false;
+      resetToNewGame();
+    }
   }
 
   sheetClose.addEventListener("click", closeSheet);
@@ -978,7 +995,7 @@
 
   // ---------------- клетка + отклик ----------------
   function renderCellCard(cell, resultText, canReflect) {
-    openSheet(cell.is_finish ? "🎉 Финиш!" : cell.name);
+    openSheet(cell.is_finish ? "Ура! Вы дома! ❤️" : cell.name);
     if (cell.number) {
       var cellImg = document.createElement("img");
       var n = cell.number < 10 ? "0" + cell.number : String(cell.number);
@@ -1168,6 +1185,7 @@
       updateStatus(data.cell.number, true, data.cell.name);
       rollCaption.textContent = data.result_text;
       renderCellCard(data.cell, data.result_text, data.can_reflect);
+      if (data.cell.is_finish) finishPending = true;
     } catch (err) {
       showBanner("Нет связи с ботом. Проверь, что бот и туннель запущены на компьютере.");
     } finally {
@@ -1329,7 +1347,7 @@
       } else {
         rollCaption.textContent = state.entered
           ? ("Сейчас вы на клетке " + state.cell + (state.cell_name ? " — " + state.cell_name : "") + ".")
-          : "Перед тем как кинуть кубик, сформулируй вопрос к игре и затем нажми «Бросить». Если твой вопрос сформулирован верно, то выпадет шесть и твоя игра началась!";
+          : NEW_GAME_CAPTION;
       }
       if (initData) hideBanner();
     } catch (err) {

@@ -179,13 +179,13 @@
     width:6.6%;
     transform:translate(-50%,-50%);
     filter:drop-shadow(0 3px 5px rgba(0,0,0,.45));
-    transition:left .32s cubic-bezier(.34,1.3,.64,1), top .32s cubic-bezier(.34,1.3,.64,1), opacity .3s ease;
+    transition:left .25s cubic-bezier(.34,1.3,.64,1), top .25s cubic-bezier(.34,1.3,.64,1), opacity .3s ease;
     opacity:0;
     pointer-events:none;
     will-change:left, top;
   }
   .token img{width:100%;display:block}
-  .token.hop{ animation:hop .32s ease }
+  .token.hop{ animation:hop .25s ease }
   @keyframes hop{
     0%{transform:translate(-50%,-50%) scale(1)}
     40%{transform:translate(-50%,-62%) scale(1.06)}
@@ -912,7 +912,7 @@
   }
   async function walkPath(path) {
     for (var i = 0; i < path.length; i++) {
-      if (i > 0) await wait(550);
+      if (i > 0) await wait(450);
       setTokenCell(path[i], true);
     }
   }
@@ -930,13 +930,20 @@
     }
     return msgs;
   }
+  // Кубик крутится, показывает число. Если выпала шестёрка и бросок не
+  // последний — кубик на секунду останавливается с подписью о перебросе,
+  // чтобы игрок успел это увидеть, и крутится снова.
   async function animateRolls(rolls) {
-    dieEl.classList.add("rolling");
-    await wait(260);
-    dieEl.classList.remove("rolling");
+    var msgs = intermediateMessages(rolls);
     for (var i = 0; i < rolls.length; i++) {
+      dieEl.classList.add("rolling");
+      await wait(260);
+      dieEl.classList.remove("rolling");
       showFace(Math.min(rolls[i], 6));
-      if (i < rolls.length - 1) await wait(260);
+      if (i < rolls.length - 1) {
+        rollCaption.textContent = msgs[i] || "";
+        await wait(1000);
+      }
     }
   }
 
@@ -1134,11 +1141,6 @@
       hideBanner();
 
       await animateRolls(data.rolls || []);
-      var msgs = intermediateMessages(data.rolls || []);
-      for (var i = 0; i < msgs.length; i++) {
-        rollCaption.textContent = msgs[i];
-        await wait(500);
-      }
 
       if (data.phase === "no_entry") {
         noEntryStreak++;

@@ -1005,7 +1005,7 @@
       sheetBody.appendChild(cellImg);
     }
     if (resultText) sheetBody.appendChild(el("p", { cls: "muted", text: resultText }));
-    sheetBody.appendChild(el("p", { text: cell.description }));
+    if (cell.description) sheetBody.appendChild(el("p", { text: cell.description }));
     if (cell.question) sheetBody.appendChild(el("p", { cls: "q", text: "❓ " + cell.question }));
     if (canReflect) {
       renderAiHelper();

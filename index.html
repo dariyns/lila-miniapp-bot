@@ -500,7 +500,7 @@
       <div class="die" id="die"></div>
       <div class="dice-info">
         <strong style="font-size:14.5px">Бросок кубика</strong>
-        <span class="roll-caption" id="rollCaption">Нажмите «Бросить», чтобы начать путь.</span>
+        <span class="roll-caption" id="rollCaption">Нажми «Бросить», чтобы начать путь.</span>
       </div>
       <button class="roll-btn" id="rollBtn">Бросить</button>
     </div>
@@ -926,7 +926,7 @@
     for (var i = 0; i < rolls.length - 1; i++) {
       if (rolls[i] === 6) {
         streak++;
-        msgs.push(streak === 3 ? "🔥 Три шестёрки подряд сгорают. Бросаем ещё раз." : "🎲 Выпало 6! Переброс.");
+        msgs.push(streak === 3 ? "🔥 Три шестёрки подряд сгорают. Бросаем ещё раз." : "🎲 Выпала шестёрка, бросаем ещё!");
       }
     }
     return msgs;
@@ -995,7 +995,7 @@
 
   // ---------------- клетка + отклик ----------------
   function renderCellCard(cell, resultText, canReflect) {
-    openSheet(cell.is_finish ? "Ура! Вы дома! ❤️" : cell.name);
+    openSheet(cell.is_finish ? "Ура! Ты дома! ❤️" : cell.name);
     if (cell.number) {
       var cellImg = document.createElement("img");
       var n = cell.number < 10 ? "0" + cell.number : String(cell.number);
@@ -1346,7 +1346,7 @@
         renderQuestionForm();
       } else {
         rollCaption.textContent = state.entered
-          ? ("Сейчас вы на клетке " + state.cell + (state.cell_name ? " — " + state.cell_name : "") + ".")
+          ? ("Сейчас ты на клетке " + state.cell + (state.cell_name ? " — " + state.cell_name : "") + ".")
           : NEW_GAME_CAPTION;
       }
       if (initData) hideBanner();

@@ -349,20 +349,20 @@
   }
   .sheet-backdrop.open{opacity:1;pointer-events:auto}
   .sheet{
-    width:100%;
+    width:calc(100% - 20px);
     max-width:480px;
-    max-height:82vh;
+    max-height:calc(82vh - 10px);
+    margin:0 10px calc(10px + env(safe-area-inset-bottom,0px));
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
     background:var(--panel);
     border:1px solid var(--line);
-    border-bottom:none;
-    border-radius:20px 20px 0 0;
-    padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    border-radius:20px;
+    padding:20px;
     transform:translateY(16px);
     transition:transform .25s cubic-bezier(.34,1.2,.64,1);
-    box-shadow:0 -10px 30px rgba(0,0,0,.25);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
   }
   .sheet-backdrop.open .sheet{transform:translateY(0)}
   .sheet h2{
@@ -1093,7 +1093,7 @@
 
   function renderQuestionForm() {
     openSheet("Твой вопрос к игре");
-    sheetBody.appendChild(el("p", { text: "🎉 Игра началась! Ты родился в игре!" }));
+    sheetBody.appendChild(el("p", { text: "🎉 Выпала шестёрка — игра началась!" }));
     sheetBody.appendChild(el("p", {
       cls: "muted",
       text: "Напиши свой вопрос — точно в той формулировке, которая сейчас была, когда выпала шестёрка."

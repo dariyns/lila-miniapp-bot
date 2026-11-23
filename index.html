@@ -1143,8 +1143,48 @@
     sheetBody.appendChild(okBtn);
     sheetClose.style.display = "none";
     okBtn.addEventListener("click", function () {
-      renderCellCard(cell, null, canReflect);
+      if (!entryPending) {
+        renderCellCard(cell, null, canReflect);
+        return;
+      }
+      okBtn.disabled = true;
+      playEntryMove(entryPending, cell, canReflect);
+      entryPending = null;
     });
+  }
+
+  // Ход после входа в игру: окно закрывается, кубик перебрасывается
+  // (с подписями про шестёрки), фишка идёт по полю до своей клетки —
+  // и только потом открывается описание клетки (решено 23.11.2026).
+  var entryPending = null;
+  async function playEntryMove(ep, cell, canReflect) {
+    sheetBackdrop.classList.remove("open");
+    rolling = true;
+    rollBtn.disabled = true;
+    try {
+      var rolls = ep.rolls;
+      var msgs = intermediateMessages(rolls);
+      rollCaption.textContent = msgs[0] || "";
+      await wait(700);
+      for (var i = 1; i < rolls.length; i++) {
+        dieEl.classList.add("rolling");
+        await wait(260);
+        dieEl.classList.remove("rolling");
+        showFace(Math.min(rolls[i], 6));
+        if (i < rolls.length - 1) {
+          rollCaption.textContent = msgs[i] || "";
+          await wait(1000);
+        }
+      }
+      await walkPath(ep.path.length ? ep.path : [cell.number]);
+      updateStatus(cell.number, true, cell.name);
+      rollCaption.textContent = ep.resultText;
+      await wait(500);
+      renderCellCard(cell, null, canReflect);
+    } finally {
+      rolling = false;
+      rollBtn.disabled = false;
+    }
   }
 
   // ---------------- бросок кубика ----------------
@@ -1157,7 +1197,11 @@
       var data = await apiPost("/api/roll", {});
       hideBanner();
 
-      await animateRolls(data.rolls || []);
+      // При входе в игру сервер уже разыграл и шестёрку, и переброс. Сейчас
+      // показываем только шестёрку; переброс и ход фишки — после того, как
+      // игрок запишет вопрос (см. playEntryMove).
+      var isEntry = data.phase === "need_question" && data.rolls && data.rolls.length > 1;
+      await animateRolls(isEntry ? data.rolls.slice(0, 1) : (data.rolls || []));
 
       if (data.phase === "no_entry") {
         noEntryStreak++;
@@ -1173,9 +1217,15 @@
       if (data.phase === "need_question") {
         retryAttempt = 0;
         noEntryStreak = 0;
-        setTokenCell(data.cell, true);
-        updateStatus(data.cell, true, data.cell_name);
-        rollCaption.textContent = data.result_text;
+        if (isEntry) {
+          entryPending = { rolls: data.rolls, path: data.path || [], resultText: data.result_text };
+          rollCaption.textContent = "🎉 Выпала шестёрка — ты входишь в игру!";
+        } else {
+          entryPending = null;
+          setTokenCell(data.cell, true);
+          updateStatus(data.cell, true, data.cell_name);
+          rollCaption.textContent = data.result_text;
+        }
         renderQuestionForm();
         return;
       }

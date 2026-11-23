@@ -620,7 +620,7 @@
   function offerCard() {
     openSheet("Хочешь карту?");
     sheetBody.appendChild(el("p", {
-      text: "Если долго не получается войти в игру, можно вытянуть метафорическую карту — она подскажет, в каком направлении двигаться."
+      text: "Если долго не получается родиться в игре, можно вытянуть метафорическую карту — она подскажет, в каком направлении двигаться."
     }));
     var note = el("p", { cls: "offer-note" });
     note.appendChild(document.createTextNode("Сейчас это бесплатно. "));
@@ -1219,7 +1219,7 @@
         noEntryStreak = 0;
         if (isEntry) {
           entryPending = { rolls: data.rolls, path: data.path || [], resultText: data.result_text };
-          rollCaption.textContent = "🎉 Выпала шестёрка — ты входишь в игру!";
+          rollCaption.textContent = "Поздравляю, выпала шестёрка. Ты родился в игре. Теперь ты можешь ходить по полю и получать осознания, которые помогут тебе в решении твоего запроса.";
         } else {
           entryPending = null;
           setTokenCell(data.cell, true);
@@ -1392,7 +1392,7 @@
         // Вопрос к игре ещё не записан (например, игрок закрыл форму, не
         // дописав его, и переоткрыл мини-апп) — не даём бросать кубик,
         // пока не запишет; см. handle_roll в src/webapp/api.py.
-        rollCaption.textContent = "Сначала запиши вопрос, с которым ты вошёл в игру.";
+        rollCaption.textContent = "Сначала запиши свой вопрос к игре.";
         renderQuestionForm();
       } else {
         rollCaption.textContent = state.entered
